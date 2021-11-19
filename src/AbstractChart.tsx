@@ -14,6 +14,9 @@ export interface AbstractChartProps {
   xAxisLabel?: string;
   xLabelsOffset?: number;
   hidePointsAtIndex?: number[];
+  renderHorizontalLinesItem?: Function;
+  renderVerticalLabelsText?: Function;
+  renderVerticalLabels?: Function;
 }
 
 export interface AbstractChartConfig extends ChartConfig {
@@ -83,7 +86,7 @@ class AbstractChart<
     }
   };
 
-  getPropsForBackgroundLines() {
+  getPropsForBackgroundLines = () => {
     const { propsForBackgroundLines = {} } = this.props.chartConfig;
     return {
       stroke: this.props.chartConfig.color(0.2),
@@ -91,7 +94,7 @@ class AbstractChart<
       strokeWidth: 1,
       ...propsForBackgroundLines
     };
-  }
+  };
 
   getPropsForLabels() {
     const {
@@ -143,18 +146,43 @@ class AbstractChart<
 
     return [...new Array(count + 1)].map((_, i) => {
       const y = (basePosition / count) * i + paddingTop;
-      return (
-        <Line
-          key={Math.random()}
-          x1={paddingRight}
-          y1={y}
-          x2={width}
-          y2={y}
-          {...this.getPropsForBackgroundLines()}
-        />
-      );
+      return this.props.renderHorizontalLinesItem != null
+        ? this.props.renderHorizontalLinesItem({
+            i,
+            count,
+            paddingRight,
+            y,
+            width,
+            ...this.getPropsForBackgroundLines
+          })
+        : this.renderHorizontalLinesItem({
+            i,
+            count,
+            paddingRight,
+            y,
+            width,
+            ...this.getPropsForBackgroundLines
+          });
     });
   };
+
+  renderHorizontalLinesItem = ({
+    i,
+    count,
+    paddingRight,
+    y,
+    width,
+    getPropsForBackgroundLines
+  }: any) => (
+    <Line
+      key={Math.random()}
+      x1={paddingRight}
+      y1={y}
+      x2={width}
+      y2={y}
+      {...getPropsForBackgroundLines(i, count)}
+    />
+  );
 
   renderHorizontalLine = config => {
     const {
@@ -290,23 +318,55 @@ class AbstractChart<
         paddingTop +
         fontSize * 2 +
         xLabelsOffset;
-
-      return (
-        <Text
-          origin={`${x}, ${y}`}
-          rotation={verticalLabelRotation}
-          key={Math.random()}
-          x={x}
-          y={y}
-          textAnchor={verticalLabelRotation === 0 ? "middle" : "start"}
-          {...this.getPropsForLabels()}
-          {...this.getPropsForVerticalLabels()}
-        >
-          {`${formatXLabel(label)}${xAxisLabel}`}
-        </Text>
-      );
+      const getPropsForLabels = this.getPropsForLabels();
+      const getPropsForVerticalLabels = this.getPropsForVerticalLabels();
+      return this.props.renderVerticalLabelsText != null
+        ? this.props.renderVerticalLabelsText({
+            x,
+            y,
+            verticalLabelRotation,
+            formatXLabel,
+            xAxisLabel,
+            label,
+            getPropsForLabels,
+            getPropsForVerticalLabels
+          })
+        : this.renderVerticalLabelsText({
+            x,
+            y,
+            verticalLabelRotation,
+            formatXLabel,
+            xAxisLabel,
+            label,
+            getPropsForLabels,
+            getPropsForVerticalLabels
+          });
     });
   };
+
+  renderVerticalLabelsText = ({
+    x,
+    y,
+    verticalLabelRotation,
+    formatXLabel,
+    xAxisLabel,
+    label,
+    getPropsForLabels,
+    getPropsForVerticalLabels
+  }: any) => (
+    <Text
+      origin={`${x}, ${y}`}
+      rotation={verticalLabelRotation}
+      key={Math.random()}
+      x={x}
+      y={y}
+      textAnchor={verticalLabelRotation === 0 ? "middle" : "start"}
+      {...getPropsForLabels}
+      {...getPropsForVerticalLabels}
+    >
+      {`${formatXLabel(label)}${xAxisLabel}`}
+    </Text>
+  );
 
   renderVerticalLines = ({
     data,
