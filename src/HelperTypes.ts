@@ -4,6 +4,7 @@ import { CircleProps, TextProps } from "react-native-svg";
 export interface Dataset {
   /** The data corresponding to the x-axis label. */
   data: number[];
+  data2: number[];
 
   /** A function returning the color of the stroke given an input opacity value. */
   color?: (opacity: number) => string;

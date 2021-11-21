@@ -225,7 +225,7 @@ class AbstractChart<
       yLabelsOffset = 12
     } = this.props;
     return new Array(count === 1 ? 1 : count + 1).fill(1).map((_, i) => {
-      let yLabel = String(i * count);
+      let yLabel: string;
 
       if (count === 1) {
         yLabel = `${yAxisLabel}${formatYLabel(
@@ -322,6 +322,7 @@ class AbstractChart<
       const getPropsForVerticalLabels = this.getPropsForVerticalLabels();
       return this.props.renderVerticalLabelsText != null
         ? this.props.renderVerticalLabelsText({
+            i,
             x,
             y,
             verticalLabelRotation,
@@ -332,6 +333,7 @@ class AbstractChart<
             getPropsForVerticalLabels
           })
         : this.renderVerticalLabelsText({
+            i,
             x,
             y,
             verticalLabelRotation,
@@ -345,6 +347,7 @@ class AbstractChart<
   };
 
   renderVerticalLabelsText = ({
+    i,
     x,
     y,
     verticalLabelRotation,
@@ -357,7 +360,7 @@ class AbstractChart<
     <Text
       origin={`${x}, ${y}`}
       rotation={verticalLabelRotation}
-      key={Math.random()}
+      key={i}
       x={x}
       y={y}
       textAnchor={verticalLabelRotation === 0 ? "middle" : "start"}

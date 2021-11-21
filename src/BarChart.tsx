@@ -52,6 +52,7 @@ export interface BarChartProps extends AbstractChartProps {
   renderBarTop?: Function;
   renderDefs?: Function;
   renderHorizontalLines?: Function;
+  paddingTopVerticalLabels?: number;
 }
 
 type BarChartState = {};
@@ -64,6 +65,7 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
 
   renderBars = ({
     data,
+    data2,
     width,
     height,
     paddingTop,
@@ -77,14 +79,17 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
     "width" | "height" | "paddingRight" | "paddingTop" | "barRadius"
   > & {
     data: number[];
+    data2?: number[];
     barRadiusX: number;
     barRadiusY: number;
     withCustomBarColorFromData: boolean;
   }) => {
     const baseHeight = this.calcBaseHeight(data, height);
+    const baseHeight2 = this.calcBaseHeight(data2, height);
 
     return data.map((x, i) => {
       const barHeight = this.calcHeight(x, data, height);
+      const barHeight2 = this.calcHeight(data2[i], data2, height);
       const barWidth = 32 * this.getBarPercentage();
       return this.props.renderBar != null
         ? this.props.renderBar({
@@ -94,25 +99,31 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
             width,
             barWidth,
             baseHeight,
+            baseHeight2,
+            barHeight2,
             barHeight,
             barRadiusX,
             barRadiusY,
             data,
+            data2,
             paddingTop: paddingTop as number,
             paddingRight: paddingRight as number,
             withCustomBarColorFromData: withCustomBarColorFromData
           })
         : this.renderBar({
             i,
-            barRadius,
             height,
             width,
             barWidth,
             baseHeight,
             barHeight,
+            baseHeight2,
+            barHeight2,
+            barRadius,
             barRadiusX,
             barRadiusY,
             data,
+            data2,
             paddingTop: paddingTop as number,
             paddingRight: paddingRight as number,
             withCustomBarColorFromData: withCustomBarColorFromData
@@ -138,10 +149,13 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
     "width" | "height" | "paddingRight" | "paddingTop"
   > & {
     data: number[];
+    data2?: number[];
     i: number;
     barWidth: number;
     baseHeight: number;
     barHeight: number;
+    baseHeight2?: number;
+    barHeight2?: number;
     barRadius: number;
     barRadiusX: number;
     barRadiusY: number;
@@ -218,7 +232,6 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
     data,
     barWidth,
     width,
-    height,
     paddingTop,
     paddingRight
   }: Pick<
@@ -355,7 +368,6 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
     barWidth,
     data,
     width,
-    height,
     paddingTop,
     paddingRight
   }: Pick<
@@ -460,7 +472,7 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
                 : this.renderHorizontalLines({
                     ...config,
                     count: segments,
-                    paddingTop
+                    paddingTop: paddingTop
                   })
               : null}
           </G>
@@ -482,14 +494,18 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
                     ...config,
                     labels: data.labels,
                     paddingRight: paddingRight as number,
-                    paddingTop: paddingTop as number,
+                    paddingTop:
+                      this.props.paddingTopVerticalLabels ||
+                      (paddingTop as number),
                     horizontalOffset: barWidth * this.getBarPercentage()
                   })
                 : this.renderVerticalLabels({
                     ...config,
                     labels: data.labels,
                     paddingRight: paddingRight as number,
-                    paddingTop: paddingTop as number,
+                    paddingTop:
+                      this.props.paddingTopVerticalLabels ||
+                      (paddingTop as number),
                     horizontalOffset: barWidth * this.getBarPercentage()
                   })
               : null}
@@ -498,6 +514,7 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
             {this.renderBars({
               ...config,
               data: data.datasets[0].data,
+              data2: data.datasets[1].data || data.datasets[0].data,
               paddingTop: paddingTop as number,
               paddingRight: paddingRight as number,
               withCustomBarColorFromData: withCustomBarColorFromData
